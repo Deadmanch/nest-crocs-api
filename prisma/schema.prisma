@@ -9,6 +9,169 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  SUCCEEDED
+  CANCELED
+}
+
+enum PaymentMethod {
+  CASH_APP_PAY
+  AFTERPAY
+  PAYPAL
+  CREDIT_CARD
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  fullName   String   @map("full_name")
+  email      String   @unique
+  password   String
+  role       UserRole
+  googleAuth Boolean  @default(false)
+  otpAuth    Boolean  @default(false)
+  otpSecret  String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  cart      Cart[]
+  order     Order[]
+
+  @@map("users")
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  title String
+  slug  String @unique
+
+  metaTitle String @map("meta_title")
+  metaDesc  String @map("meta_desc")
+
+  seoTextRight String? @map("seo_text_right")
+  seoTextLeft  String? @map("seo_text_left")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  product   Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id    Int    @id @default(autoincrement())
+  title String
+  slug  String @unique
+
+  metaTitle String @map("meta_title")
+  metaDesc  String @map("meta_desc")
+
+  seoTextRight String? @map("seo_text_right")
+  seoTextLeft  String? @map("seo_text_left")
+
+  basePrice Float  @map("base_price")
+  discount  Float?
+
+  shortDesc   String?  @map("short_desc")
+  tags        String[]
+  sizeOptions String[] @map("size_options")
+
+  categoryId Int
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  colors    Color[]
+  cartItem  CartItem[]
+  orderItem OrderItem[]
+
+  @@map("products")
+}
+
+model Color {
+  id     Int      @id @default(autoincrement())
+  title  String
+  images String[]
+
+  productId Int
+  product   Product     @relation(fields: [productId], references: [id])
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  cartItem  CartItem[]
+  orderItem OrderItem[]
+
+  @@map("colors")
+}
+
+model Cart {
+  id       Int        @id @default(autoincrement())
+  userId   Int?
+  token    String     @unique
+  user     User?      @relation(fields: [userId], references: [id])
+  cartItem CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  productId Int
+  colorId   Int
+  product   Product  @relation(fields: [productId], references: [id])
+  color     Color    @relation(fields: [colorId], references: [id])
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  size      String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("cart_items")
+}
+
+model Order {
+  id            Int           @id @default(autoincrement())
+  userId        Int
+  user          User          @relation(fields: [userId], references: [id])
+  addressStreet String        @map("address_street")
+  addressCity   String        @map("address_city")
+  addressState  String        @map("address_state")
+  addressZip    String        @map("address_zip")
+  fullName      String        @map("full_name")
+  totalAmount   Float         @map("total_amount")
+  paymentStatus OrderStatus   @default(PENDING) @map("payment_status")
+  paymentMethod PaymentMethod @map("payment_method")
+  phoneNumber   String        @map("phone_number")
+
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  orderItem OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  colorId   Int
+  size      String
+  quantity  Int      @default(1)
+  product   Product  @relation(fields: [productId], references: [id])
+  color     Color    @relation(fields: [colorId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("order_items")
 }
