@@ -8,7 +8,7 @@ import { CartModule } from './cart/cart.module';
 import { ColorModule } from './color/color.module';
 import { OrderModule } from './order/order.module';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaService } from './prisma.service';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
 	imports: [
@@ -21,8 +21,9 @@ import { PrismaService } from './prisma.service';
 		CartModule,
 		ColorModule,
 		OrderModule,
+		PrismaModule,
 	],
 	controllers: [],
-	providers: [PrismaService],
+	providers: [],
 })
 export class AppModule {}
