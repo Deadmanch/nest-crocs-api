@@ -9,6 +9,7 @@ import { ColorModule } from './color/color.module';
 import { OrderModule } from './order/order.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
+import { SizeModule } from './size/size.module';
 
 @Module({
 	imports: [
@@ -22,6 +23,7 @@ import { PrismaModule } from './prisma/prisma.module';
 		ColorModule,
 		OrderModule,
 		PrismaModule,
+		SizeModule,
 	],
 	controllers: [],
 	providers: [],

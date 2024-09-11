@@ -96,7 +96,7 @@ model Product {
 
 model Color {
   id      Int      @id @default(autoincrement())
-  title   String
+  title   String   @unique
   images  String[]
   inStock Boolean  @default(true)
 
@@ -109,7 +109,7 @@ model Color {
 
 model Size {
   id      Int     @id @default(autoincrement())
-  title   String
+  title   String  @unique
   inStock Boolean @default(true)
 
   createdAt DateTime  @default(now()) @map("created_at")

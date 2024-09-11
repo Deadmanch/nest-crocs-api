@@ -22,6 +22,6 @@ export class FilesService {
 	}
 
 	async convertToWebP(fileBuffer: Buffer): Promise<Buffer> {
-		return sharp(fileBuffer).webp().resize({ width: 500 }).toBuffer();
+		return sharp(fileBuffer).webp().toBuffer();
 	}
 }
