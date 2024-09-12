@@ -56,7 +56,7 @@ export class SizeController {
 	@Roles(UserRole.ADMIN)
 	@UseGuards(JwtAuthGuard, RoleGuard)
 	@Delete(':id')
-	async delete(@Param('id') id: string) {
+	async deleteColor(@Param('id') id: string) {
 		return await this.sizeService.delete(Number(id));
 	}
 }

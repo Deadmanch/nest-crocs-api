@@ -62,14 +62,18 @@ export class ColorController {
 	async update(
 		@Param('id') id: string,
 		@Body() data: UpdateColorDto,
-		@UploadedFiles() images: Express.Multer.File[],
+		@UploadedFiles() images: Express.Multer.File[] = [],
 	) {
-		const imageUrls: FileElementResponse[] = [];
-		for (const image of images) {
-			const file = await this.filesService.saveAsWebp(image);
-			imageUrls.push(file);
+		if (images.length > 0) {
+			const imageUrls: FileElementResponse[] = [];
+			for (const image of images) {
+				const file = await this.filesService.saveAsWebp(image);
+				imageUrls.push(file);
+			}
+			data.images = imageUrls.map((image) => image.url);
+		} else {
+			delete data.images;
 		}
-		data.images = imageUrls.map((image) => image.url);
 		const updatedColor = await this.colorService.update(Number(id), data);
 		if (!updatedColor) {
 			throw new HttpException(ColorErrors.NOT_FOUND_BY_ID, HttpStatus.NOT_FOUND);

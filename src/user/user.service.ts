@@ -21,6 +21,29 @@ export class UserService {
 		});
 	}
 
+	async createOrUpdateGoogleUser(email: string, fullName: string): Promise<UserModel> {
+		const existingUser = await this.prismaService.user.findUnique({ where: { email } });
+		if (existingUser) {
+			if (!existingUser.googleAuth) {
+				return this.prismaService.user.update({
+					where: { email },
+					data: { googleAuth: true },
+				});
+			}
+			return existingUser;
+		}
+
+		return await this.prismaService.user.create({
+			data: {
+				email,
+				fullName,
+				password: '',
+				role: UserRole.USER,
+				googleAuth: true,
+			},
+		});
+	}
+
 	async getById(id: number): Promise<UserModel | null> {
 		const existingUser = await this.prismaService.user.findUnique({ where: { id } });
 		if (!existingUser) {

@@ -5,4 +5,5 @@ export interface ICreateUser {
 	email: string;
 	password: string;
 	role: UserRole;
+	googleAuth?: boolean;
 }

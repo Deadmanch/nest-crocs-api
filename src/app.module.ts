@@ -10,6 +10,8 @@ import { OrderModule } from './order/order.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { SizeModule } from './size/size.module';
+import { CartItemModule } from './cart-item/cart-item.module';
+import { OrderItemModule } from './order-item/order-item.module';
 
 @Module({
 	imports: [
@@ -24,6 +26,8 @@ import { SizeModule } from './size/size.module';
 		OrderModule,
 		PrismaModule,
 		SizeModule,
+		CartItemModule,
+		OrderItemModule,
 	],
 	controllers: [],
 	providers: [],

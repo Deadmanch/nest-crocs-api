@@ -41,8 +41,6 @@ model User {
   password   String
   role       UserRole
   googleAuth Boolean  @default(false)
-  otpAuth    Boolean  @default(false)
-  otpSecret  String?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -73,7 +71,7 @@ model Category {
 
 model Product {
   id         Int         @id @default(autoincrement())
-  title      String
+  title      String      @unique
   slug       String      @unique
   images     String[]
   metaTitle  String?     @map("meta_title")

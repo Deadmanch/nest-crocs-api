@@ -23,6 +23,11 @@ export class AuthService {
 		return { email: user.email };
 	}
 
+	async validateGoogleUser(email: string, firstName: string, lastName: string) {
+		const fullName = firstName && lastName ? `${firstName} ${lastName}` : 'User - ${email}';
+		return await this.userService.createOrUpdateGoogleUser(email, fullName);
+	}
+
 	async login(email: string) {
 		const payload = { email };
 		return {

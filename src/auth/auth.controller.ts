@@ -2,7 +2,10 @@ import {
 	BadRequestException,
 	Body,
 	Controller,
+	Get,
 	Post,
+	Req,
+	UseGuards,
 	UsePipes,
 	ValidationPipe,
 } from '@nestjs/common';
@@ -11,6 +14,8 @@ import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { AuthErrors } from './auth.constants';
 import { LoginUserDto } from './dto/login.user.dto';
+import { GoogleAuthGuard } from './guards/google.guard';
+import { IGoogleRequest } from './interfaces/google-user.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -40,5 +45,19 @@ export class AuthController {
 				role: res.user?.role,
 			},
 		};
+	}
+	@Get('google')
+	@UseGuards(GoogleAuthGuard)
+	async googleAuth() {}
+
+	@Get('google/callback')
+	@UseGuards(GoogleAuthGuard)
+	async googleAuthCallback(@Req() req: IGoogleRequest) {
+		const user = await this.authService.validateGoogleUser(
+			req.user.email,
+			req.user.firstName,
+			req.user.lastName,
+		);
+		return await this.authService.login(user.email);
 	}
 }
