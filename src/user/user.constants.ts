@@ -5,4 +5,5 @@ export const UserErrors = {
 	PASSWORD_MUST_BE_STRING: 'Пароль должен быть строкой.',
 	PASSWORD_MIN_LENGTH: 'Пароль должен содержать не менее 6 символов.',
 	EMAIL_MUST_BE_VALID: 'Email должен быть валидным.',
+	FULL_NAME_MUST_BE_VALID: 'Имя и фамилия должны содержать только буквы.',
 };

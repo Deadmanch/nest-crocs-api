@@ -32,6 +32,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/serve-static": "^4.0.2",
+    "@nestjs/swagger": "^7.4.0",
     "@prisma/client": "^5.19.1",
     "@types/cookie-parser": "^1.4.7",
     "@types/fs-extra": "^11.0.4",

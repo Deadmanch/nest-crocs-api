@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User as UserModel, UserRole } from '@prisma/client';
 import { genSalt, hash } from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { ICreateUser } from './interfaces/create-user.interface';
+import { IUpdateUser } from './interfaces/update-user.interface';
+import { UserErrors } from './user.constants';
 
 @Injectable()
 export class UserService {
@@ -44,8 +46,8 @@ export class UserService {
 		});
 	}
 
-	async getById(id: number): Promise<UserModel | null> {
-		const existingUser = await this.prismaService.user.findUnique({ where: { id } });
+	async getByUserId(userId: number): Promise<UserModel | null> {
+		const existingUser = await this.prismaService.user.findUnique({ where: { id: userId } });
 		if (!existingUser) {
 			return null;
 		}
@@ -58,5 +60,27 @@ export class UserService {
 			return null;
 		}
 		return existingUser;
+	}
+
+	async updateUser(id: number, data: IUpdateUser) {
+		const existingUser = await this.prismaService.user.findUnique({ where: { id } });
+		if (!existingUser) {
+			throw new HttpException(UserErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
+		}
+		if (data.password) {
+			const salt = await genSalt(10);
+			const hashPassword = await hash(data.password, salt);
+			data.password = hashPassword;
+		}
+
+		return await this.prismaService.user.update({ where: { id }, data });
+	}
+
+	async deleteUser(id: number) {
+		const existingUser = await this.prismaService.user.findUnique({ where: { id } });
+		if (!existingUser) {
+			throw new HttpException(UserErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
+		}
+		return await this.prismaService.user.delete({ where: { id } });
 	}
 }

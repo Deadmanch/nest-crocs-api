@@ -1,4 +1,3 @@
-import { JwtAuthGuard } from './../auth/guards/jwt.guard';
 import { Body, Controller, Delete, Param, Patch, Post, Req, UseGuards, Get } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { UserEmailAndId, UserInfo } from 'src/decorators/user-email-userId.decorator';
@@ -12,48 +11,53 @@ export class CartController {
 	constructor(private readonly cartService: CartService) {}
 
 	@Post('create')
-	@UseGuards(JwtAuthGuard, CartTokenGuard)
-	async createCart(@UserEmailAndId() { userId }: UserInfo, @Req() req: Request) {
+	@UseGuards(CartTokenGuard)
+	async createCart(@UserEmailAndId() userInfo: UserInfo | null, @Req() req: Request) {
 		const token = req.cartToken;
+		const userId = userInfo ? userInfo.userId : null;
 		return await this.cartService.getCart(userId, token);
 	}
 
 	@Post('add-item')
-	@UseGuards(JwtAuthGuard, CartTokenGuard)
+	@UseGuards(CartTokenGuard)
 	async addItem(
-		@UserEmailAndId() { userId }: UserInfo,
+		@UserEmailAndId() userInfo: UserInfo | null,
 		@Req() req: Request,
 		@Body() dto: CreateCartDto,
 	) {
+		const userId = userInfo ? userInfo.userId : null;
 		const token = req.cartToken;
 		return await this.cartService.addItem(userId, token, dto);
 	}
 
 	@Patch(':itemId')
-	@UseGuards(JwtAuthGuard, CartTokenGuard)
+	@UseGuards(CartTokenGuard)
 	async updateItem(
-		@UserEmailAndId() { userId }: UserInfo,
+		@UserEmailAndId() userInfo: UserInfo | null,
 		@Req() req: Request,
 		@Param('itemId') itemId: string,
 		@Body() dto: UpdateCartDto,
 	) {
+		const userId = userInfo ? userInfo.userId : null;
 		const token = req.cartToken;
 		return await this.cartService.updateItem(userId, token, itemId, dto);
 	}
 	@Delete(':itemId')
-	@UseGuards(JwtAuthGuard, CartTokenGuard)
+	@UseGuards(CartTokenGuard)
 	async deleteItem(
-		@UserEmailAndId() { userId }: UserInfo,
+		@UserEmailAndId() userInfo: UserInfo | null,
 		@Req() req: Request,
 		@Param('itemId') itemId: string,
 	) {
+		const userId = userInfo ? userInfo.userId : null;
 		const token = req.cartToken;
 		return await this.cartService.removeItem(userId, token, itemId);
 	}
 
 	@Get()
-	@UseGuards(JwtAuthGuard, CartTokenGuard)
-	async getCart(@UserEmailAndId() { userId }: UserInfo, @Req() req: Request) {
+	@UseGuards(CartTokenGuard)
+	async getCart(@UserEmailAndId() userInfo: UserInfo | null, @Req() req: Request) {
+		const userId = userInfo ? userInfo.userId : null;
 		const token = req.cartToken;
 		return await this.cartService.getCart(userId, token);
 	}

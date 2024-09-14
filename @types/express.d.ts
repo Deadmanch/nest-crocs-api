@@ -1,7 +1,7 @@
 import 'express';
 declare module 'express' {
 	interface Request {
-		cartToken?: string;
+		cartToken: string;
 		user?: {
 			userId: number;
 			email: string;

@@ -122,7 +122,7 @@ model Size {
 model Cart {
   id          Int        @id @default(autoincrement())
   userId      Int?       @unique
-  token       String     @unique
+  token       String
   totalAmount Float      @map("total_amount")
   user        User?      @relation(fields: [userId], references: [id])
   cartItems   CartItem[]
@@ -152,8 +152,8 @@ model Order {
   id            Int           @id @default(autoincrement())
   userId        Int?
   user          User?         @relation(fields: [userId], references: [id])
+  token         String
   fullName      String        @map("full_name")
-  lastName      String        @map("last_name")
   zipCode       String        @map("zip_code")
   city          String
   streetAddress String        @map("street_address")
@@ -178,6 +178,7 @@ model OrderItem {
   size      String?
   color     String?
   quantity  Int      @default(1)
+  price     Float
   product   Product  @relation(fields: [productId], references: [id])
   order     Order    @relation(fields: [orderId], references: [id])
   createdAt DateTime @default(now()) @map("created_at")

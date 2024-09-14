@@ -41,7 +41,7 @@ export class CartService {
 		return cart;
 	}
 
-	async getCart(userId: number | null, token: string | undefined) {
+	async getCart(userId: number | null, token: string) {
 		const cart = await this.prismaService.cart.findFirst({
 			where: { userId, token },
 			include: {
@@ -57,7 +57,7 @@ export class CartService {
 		return cart;
 	}
 
-	async addItem(userId: number | null, token: string | undefined, data: ICreateCart) {
+	async addItem(userId: number | null, token: string, data: ICreateCart) {
 		const cart = await this.getCart(userId, token);
 		const { productId, colorId, sizeId, quantity } = data;
 		const existingItem = await this.prismaService.cartItem.findUnique({
@@ -81,12 +81,7 @@ export class CartService {
 		return { message: CartMessage.ADDED_TO_CART };
 	}
 
-	async updateItem(
-		userId: number | null,
-		token: string | undefined,
-		itemId: string,
-		data: IUpdateCart,
-	) {
+	async updateItem(userId: number | null, token: string, itemId: string, data: IUpdateCart) {
 		const cart = await this.getCart(userId, token);
 		if (!cart) {
 			throw new HttpException(CartErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -108,7 +103,7 @@ export class CartService {
 		return { message: CartMessage.UPDATED_QUANTITY };
 	}
 
-	async removeItem(userId: number | null, token: string | undefined, itemId: string) {
+	async removeItem(userId: number | null, token: string, itemId: string) {
 		const cart = await this.prismaService.cart.findFirst({
 			where: { userId, token },
 		});

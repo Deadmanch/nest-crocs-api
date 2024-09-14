@@ -6,8 +6,8 @@ export interface UserInfo {
 }
 
 export const UserEmailAndId = createParamDecorator(
-	(data: unknown, ctx: ExecutionContext): UserInfo => {
+	(data: unknown, ctx: ExecutionContext): UserInfo | null => {
 		const request = ctx.switchToHttp().getRequest();
-		return request.user;
+		return request.user || null;
 	},
 );

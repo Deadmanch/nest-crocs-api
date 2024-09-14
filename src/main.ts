@@ -2,9 +2,19 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
+
+	const config = new DocumentBuilder()
+		.setTitle('Crocs-Api | By Stepanov Danil')
+		.setDescription('API for Crocs')
+		.setVersion('1.0')
+		.addTag('Crocs')
+		.build();
+	const document = SwaggerModule.createDocument(app, config);
+	SwaggerModule.setup('api', app, document);
 	app.use(cookieParser());
 	const configService = app.get(ConfigService);
 	const port = configService.get<number>('APP_PORT') || 3000;
