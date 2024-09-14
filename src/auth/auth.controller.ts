@@ -5,6 +5,7 @@ import {
 	Get,
 	Post,
 	Req,
+	Res,
 	UseGuards,
 	UsePipes,
 	ValidationPipe,
@@ -16,6 +17,7 @@ import { AuthErrors } from './auth.constants';
 import { LoginUserDto } from './dto/login.user.dto';
 import { GoogleAuthGuard } from './guards/google.guard';
 import { IGoogleRequest } from './interfaces/google-user.interface';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -35,14 +37,17 @@ export class AuthController {
 	}
 
 	@Post('login')
-	async login(@Body() { email, password }: LoginUserDto) {
+	async login(
+		@Body() { email, password }: LoginUserDto,
+		@Res({ passthrough: true }) res: Response,
+	) {
 		const user = await this.authService.validateUser(email, password);
-		const res = await this.authService.login(user.email);
+		const loginResponse = await this.authService.login(user.email, res);
 		return {
-			access_token: res.access_token,
+			access_token: loginResponse.access_token,
 			user: {
 				email: user.email,
-				role: res.user?.role,
+				userId: user.userId,
 			},
 		};
 	}
@@ -52,12 +57,13 @@ export class AuthController {
 
 	@Get('google/callback')
 	@UseGuards(GoogleAuthGuard)
-	async googleAuthCallback(@Req() req: IGoogleRequest) {
+	async googleAuthCallback(@Req() req: IGoogleRequest, @Res({ passthrough: true }) res: Response) {
 		const user = await this.authService.validateGoogleUser(
 			req.user.email,
 			req.user.firstName,
 			req.user.lastName,
 		);
-		return await this.authService.login(user.email);
+		const loginResponse = await this.authService.login(user.email, res);
+		return loginResponse;
 	}
 }

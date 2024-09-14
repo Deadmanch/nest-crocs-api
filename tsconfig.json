@@ -16,5 +16,6 @@
     "noFallthroughCasesInSwitch": false,
     "strictPropertyInitialization": false,
     "strict": true
-  }
+  },
+  "include": ["src", "@types/*.d.ts"],
 }

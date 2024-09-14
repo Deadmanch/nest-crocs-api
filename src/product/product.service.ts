@@ -42,8 +42,8 @@ export class ProductService {
 				data: {
 					title: data.title,
 					slug: data.slug,
-					price: data.price,
-					discont: data.discont,
+					originalPrice: data.originalPrice,
+					discountedPrice: data.discountedPrice,
 					metaTitle: data.metaTitle,
 					metaDesc: data.metaDesc,
 					seoText: data.seoText,
@@ -65,18 +65,18 @@ export class ProductService {
 				select: { id: true, title: true, inStock: true, images: true },
 			}),
 			this.prismaService.product.findMany({
-				select: { price: true },
-				orderBy: { price: 'desc' },
+				select: { originalPrice: true },
+				orderBy: { originalPrice: 'desc' },
 				take: 1,
 			}),
 			this.prismaService.product.findMany({
-				select: { price: true },
-				orderBy: { price: 'asc' },
+				select: { originalPrice: true },
+				orderBy: { originalPrice: 'asc' },
 				take: 1,
 			}),
 		]);
-		const maxPrice = maxPriceResult[0].price;
-		const minPrice = minPriceResult[0].price;
+		const maxPrice = maxPriceResult[0].originalPrice;
+		const minPrice = minPriceResult[0].originalPrice;
 
 		return { sizes, colors, maxPrice, minPrice };
 	}
@@ -96,8 +96,8 @@ export class ProductService {
 			where: {
 				AND: [
 					{ categoryId },
-					minPrice ? { price: { gte: minPrice } } : {},
-					maxPrice ? { price: { lte: maxPrice } } : {},
+					minPrice ? { originalPrice: { gte: minPrice } } : {},
+					maxPrice ? { originalPrice: { lte: maxPrice } } : {},
 					colorIds ? { colors: { some: { id: { in: colorIds } } } } : {},
 					sizeIds ? { sizes: { some: { id: { in: sizeIds } } } } : {},
 				],

@@ -15,8 +15,6 @@ CREATE TABLE "users" (
     "password" TEXT NOT NULL,
     "role" "UserRole" NOT NULL,
     "googleAuth" BOOLEAN NOT NULL DEFAULT false,
-    "otpAuth" BOOLEAN NOT NULL DEFAULT false,
-    "otpSecret" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -51,7 +49,6 @@ CREATE TABLE "products" (
     "price" DOUBLE PRECISION NOT NULL,
     "discont" DOUBLE PRECISION,
     "tags" TEXT[],
-    "sizes" TEXT[],
     "categoryId" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -64,6 +61,7 @@ CREATE TABLE "colors" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "images" TEXT[],
+    "inStock" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -71,10 +69,22 @@ CREATE TABLE "colors" (
 );
 
 -- CreateTable
+CREATE TABLE "sizes" (
+    "id" SERIAL NOT NULL,
+    "title" TEXT NOT NULL,
+    "inStock" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "sizes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "carts" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER,
     "token" TEXT NOT NULL,
+    "total_amount" DOUBLE PRECISION NOT NULL,
 
     CONSTRAINT "carts_pkey" PRIMARY KEY ("id")
 );
@@ -84,6 +94,8 @@ CREATE TABLE "cart_items" (
     "id" SERIAL NOT NULL,
     "cartId" INTEGER NOT NULL,
     "productId" INTEGER NOT NULL,
+    "colorId" INTEGER NOT NULL,
+    "sizeId" INTEGER NOT NULL,
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -127,6 +139,12 @@ CREATE TABLE "order_items" (
 );
 
 -- CreateTable
+CREATE TABLE "_ProductToSize" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
+);
+
+-- CreateTable
 CREATE TABLE "_ColorToProduct" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
@@ -139,13 +157,31 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 CREATE UNIQUE INDEX "categories_slug_key" ON "categories"("slug");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "products_title_key" ON "products"("title");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "products_slug_key" ON "products"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "colors_title_key" ON "colors"("title");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "sizes_title_key" ON "sizes"("title");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "carts_userId_key" ON "carts"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "carts_token_key" ON "carts"("token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "cart_items_cartId_productId_colorId_sizeId_key" ON "cart_items"("cartId", "productId", "colorId", "sizeId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_ProductToSize_AB_unique" ON "_ProductToSize"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_ProductToSize_B_index" ON "_ProductToSize"("B");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_ColorToProduct_AB_unique" ON "_ColorToProduct"("A", "B");
@@ -173,6 +209,12 @@ ALTER TABLE "order_items" ADD CONSTRAINT "order_items_productId_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ProductToSize" ADD CONSTRAINT "_ProductToSize_A_fkey" FOREIGN KEY ("A") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ProductToSize" ADD CONSTRAINT "_ProductToSize_B_fkey" FOREIGN KEY ("B") REFERENCES "sizes"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ColorToProduct" ADD CONSTRAINT "_ColorToProduct_A_fkey" FOREIGN KEY ("A") REFERENCES "colors"("id") ON DELETE CASCADE ON UPDATE CASCADE;

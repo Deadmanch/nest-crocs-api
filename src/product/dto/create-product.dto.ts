@@ -22,11 +22,11 @@ export class CreateProductDto {
 	seoText?: string;
 	@IsNumber({}, { message: ProductErrors.PRICE_MUST_BE_NUMBER })
 	@Transform(({ value }) => Number(value))
-	price: number;
+	originalPrice: number;
 	@IsOptional()
 	@IsNumber({}, { message: ProductErrors.DISCONT_MUST_BE_NUMBER })
 	@Transform(({ value }) => Number(value))
-	discont?: number;
+	discountedPrice?: number;
 	@IsOptional()
 	@IsArray({ message: ProductErrors.TAGS_MUST_BE_ARRAY })
 	@IsString({ each: true, message: ProductErrors.TAGS_MUST_BE_ARRAY })

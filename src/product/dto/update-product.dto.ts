@@ -25,11 +25,11 @@ export class UpdateProductDto {
 	@IsOptional()
 	@IsNumber({}, { message: ProductErrors.PRICE_MUST_BE_NUMBER })
 	@Transform(({ value }) => Number(value))
-	price: number;
+	originalPrice?: number;
 	@IsOptional()
 	@IsNumber({}, { message: ProductErrors.DISCONT_MUST_BE_NUMBER })
 	@Transform(({ value }) => Number(value))
-	discont?: number;
+	discountedPrice?: number;
 	@IsOptional()
 	@IsArray({ message: ProductErrors.TAGS_MUST_BE_ARRAY })
 	@IsString({ each: true, message: ProductErrors.TAGS_MUST_BE_ARRAY })
@@ -38,15 +38,15 @@ export class UpdateProductDto {
 	@IsOptional()
 	@IsNumber({}, { message: ProductErrors.CATEGORY_ID_MUST_BE_NUMBER })
 	@Transform(({ value }) => Number(value))
-	categoryId: number;
+	categoryId?: number;
 	@IsOptional()
 	@IsArray({ message: ProductErrors.SIZE_IDS_MUST_BE_ARRAY_OF_NUMBERS })
 	@IsNumber({}, { each: true, message: ProductErrors.SIZE_IDS_MUST_BE_ARRAY_OF_NUMBERS })
 	@Transform(({ value }) => (Array.isArray(value) ? value.map(Number) : [Number(value)]))
-	sizeIds: number[];
+	sizeIds?: number[];
 	@IsOptional()
 	@IsArray({ message: ProductErrors.COLOR_IDS_MUST_BE_ARRAY_OF_NUMBERS })
 	@IsNumber({}, { each: true, message: ProductErrors.COLOR_IDS_MUST_BE_ARRAY_OF_NUMBERS })
 	@Transform(({ value }) => (Array.isArray(value) ? value.map(Number) : [Number(value)]))
-	colorIds: number[];
+	colorIds?: number[];
 }

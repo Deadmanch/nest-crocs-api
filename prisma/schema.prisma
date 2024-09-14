@@ -70,24 +70,24 @@ model Category {
 }
 
 model Product {
-  id         Int         @id @default(autoincrement())
-  title      String      @unique
-  slug       String      @unique
-  images     String[]
-  metaTitle  String?     @map("meta_title")
-  metaDesc   String?     @map("meta_desc")
-  seoText    String?     @map("seo_text")
-  price      Float
-  discont    Float?
-  tags       String[]
-  categoryId Int
-  category   Category    @relation(fields: [categoryId], references: [id])
-  createdAt  DateTime    @default(now()) @map("created_at")
-  updatedAt  DateTime    @updatedAt @map("updated_at")
-  colors     Color[]
-  cartItems  CartItem[]
-  orderItems OrderItem[]
-  sizes      Size[]
+  id              Int         @id @default(autoincrement())
+  title           String      @unique
+  slug            String      @unique
+  images          String[]
+  metaTitle       String?     @map("meta_title")
+  metaDesc        String?     @map("meta_desc")
+  seoText         String?     @map("seo_text")
+  originalPrice   Float       @map("original_price")
+  discountedPrice Float?      @map("discounted_price")
+  tags            String[]
+  categoryId      Int
+  category        Category    @relation(fields: [categoryId], references: [id])
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  colors          Color[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  sizes           Size[]
 
   @@map("products")
 }
@@ -98,9 +98,10 @@ model Color {
   images  String[]
   inStock Boolean  @default(true)
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
   products  Product[]
+  cartItem  CartItem[]
 
   @@map("colors")
 }
@@ -110,19 +111,21 @@ model Size {
   title   String  @unique
   inStock Boolean @default(true)
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
   products  Product[]
+  cartItem  CartItem[]
 
   @@map("sizes")
 }
 
 model Cart {
-  id        Int        @id @default(autoincrement())
-  userId    Int?       @unique
-  token     String     @unique
-  user      User?      @relation(fields: [userId], references: [id])
-  cartItems CartItem[]
+  id          Int        @id @default(autoincrement())
+  userId      Int?       @unique
+  token       String     @unique
+  totalAmount Float      @map("total_amount")
+  user        User?      @relation(fields: [userId], references: [id])
+  cartItems   CartItem[]
 
   @@map("carts")
 }
@@ -131,12 +134,17 @@ model CartItem {
   id        Int      @id @default(autoincrement())
   cartId    Int
   productId Int
+  colorId   Int
+  sizeId    Int
+  color     Color    @relation(fields: [colorId], references: [id])
+  size      Size     @relation(fields: [sizeId], references: [id])
   product   Product  @relation(fields: [productId], references: [id])
   cart      Cart     @relation(fields: [cartId], references: [id])
   quantity  Int      @default(1)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@unique([cartId, productId, colorId, sizeId])
   @@map("cart_items")
 }
 

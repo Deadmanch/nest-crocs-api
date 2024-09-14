@@ -3,6 +3,7 @@ import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { AuthErrors } from './auth.constants';
 import { compare } from 'bcryptjs';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,7 @@ export class AuthService {
 		if (!isCorrectPassword) {
 			throw new UnauthorizedException(AuthErrors.INCORRECT_PASSWORD);
 		}
-		return { email: user.email };
+		return { email: user.email, userId: user.id };
 	}
 
 	async validateGoogleUser(email: string, firstName: string, lastName: string) {
@@ -28,11 +29,16 @@ export class AuthService {
 		return await this.userService.createOrUpdateGoogleUser(email, fullName);
 	}
 
-	async login(email: string) {
-		const payload = { email };
+	async login(email: string, res: Response) {
+		const user = await this.userService.getByEmail(email);
+		if (!user) {
+			throw new UnauthorizedException(AuthErrors.USER_NOT_FOUND);
+		}
+		const payload = { email: user.email, userId: user.id };
+		const token = await this.jwtService.signAsync(payload);
+		res.cookie('jwt', token, { httpOnly: true, secure: true, sameSite: 'strict' });
 		return {
-			access_token: await this.jwtService.signAsync(payload),
-			user: await this.userService.getByEmail(email),
+			access_token: token,
 		};
 	}
 }

@@ -5,8 +5,8 @@ export interface ICreateProduct {
 	metaTitle?: string;
 	metaDesc?: string;
 	seoText?: string;
-	price: number;
-	discont?: number;
+	originalPrice: number;
+	discountedPrice?: number;
 	tags?: string[];
 	categoryId: number;
 	sizeIds: number[];
