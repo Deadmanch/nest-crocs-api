@@ -1,23 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { MFile } from './mfile.class';
 import { format } from 'date-fns';
-import { path } from 'app-root-path';
-import { ensureDir, writeFile } from 'fs-extra';
 import * as sharp from 'sharp';
 import { FileElementResponse } from './dto/file-element.response';
+import { S3 } from 'aws-sdk';
 
 Injectable();
 export class FilesService {
+	constructor(
+		private readonly s3 = new S3({
+			endpoint: 'https://storage.yandexcloud.net',
+			region: 'ru-central1',
+			credentials: {
+				accessKeyId: process.env.YANDEX_ACCESS_KEY_ID || '',
+				secretAccessKey: process.env.YANDEX_SECRET_ACCESS_KEY || '',
+			},
+		}),
+	) {}
 	async saveAsWebp(file: Express.Multer.File): Promise<FileElementResponse> {
 		const dateFolder = format(new Date(), 'yyyy-MM-dd');
-		const uploadFolder = `${path}/uploads/${dateFolder}`;
-		await ensureDir(uploadFolder);
 		const webpBuffer = await this.convertToWebP(file.buffer);
 		const webpFile = new MFile({
 			originalname: `${file.originalname.split('.')[0]}.webp`,
 			buffer: webpBuffer,
 		});
-		await writeFile(`${uploadFolder}/${webpFile.originalname}`, webpFile.buffer);
+
+		const params = {
+			Bucket: 'crocs-bucket',
+			Key: `${dateFolder}/${webpFile.originalname}`,
+			Body: webpFile.buffer,
+			ContentType: 'image/webp',
+			ACL: 'public-read',
+		};
+
+		await this.s3.upload(params).promise();
+
 		return { url: `${dateFolder}/${webpFile.originalname}`, name: webpFile.originalname };
 	}
 
