@@ -46,8 +46,8 @@ CREATE TABLE "products" (
     "meta_title" TEXT,
     "meta_desc" TEXT,
     "seo_text" TEXT,
-    "price" DOUBLE PRECISION NOT NULL,
-    "discont" DOUBLE PRECISION,
+    "original_price" DOUBLE PRECISION NOT NULL,
+    "discounted_price" DOUBLE PRECISION,
     "tags" TEXT[],
     "categoryId" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -107,8 +107,8 @@ CREATE TABLE "cart_items" (
 CREATE TABLE "orders" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER,
+    "token" TEXT NOT NULL,
     "full_name" TEXT NOT NULL,
-    "last_name" TEXT NOT NULL,
     "zip_code" TEXT NOT NULL,
     "city" TEXT NOT NULL,
     "street_address" TEXT NOT NULL,
@@ -132,6 +132,7 @@ CREATE TABLE "order_items" (
     "size" TEXT,
     "color" TEXT,
     "quantity" INTEGER NOT NULL DEFAULT 1,
+    "price" DOUBLE PRECISION NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -172,9 +173,6 @@ CREATE UNIQUE INDEX "sizes_title_key" ON "sizes"("title");
 CREATE UNIQUE INDEX "carts_userId_key" ON "carts"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "carts_token_key" ON "carts"("token");
-
--- CreateIndex
 CREATE UNIQUE INDEX "cart_items_cartId_productId_colorId_sizeId_key" ON "cart_items"("cartId", "productId", "colorId", "sizeId");
 
 -- CreateIndex
@@ -194,6 +192,12 @@ ALTER TABLE "products" ADD CONSTRAINT "products_categoryId_fkey" FOREIGN KEY ("c
 
 -- AddForeignKey
 ALTER TABLE "carts" ADD CONSTRAINT "carts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "cart_items" ADD CONSTRAINT "cart_items_colorId_fkey" FOREIGN KEY ("colorId") REFERENCES "colors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "cart_items" ADD CONSTRAINT "cart_items_sizeId_fkey" FOREIGN KEY ("sizeId") REFERENCES "sizes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "cart_items" ADD CONSTRAINT "cart_items_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -39,7 +39,10 @@ export class FilesService {
 		const command = new PutObjectCommand(params);
 		await this.s3.send(command);
 
-		return { url: `${dateFolder}/${webpFile.originalname}`, name: webpFile.originalname };
+		const baseUrl = 'https://crocs-bucket.storage.yandexcloud.net';
+		const fileUrl = `${baseUrl}/${dateFolder}/${webpFile.originalname}`;
+
+		return { url: fileUrl, name: webpFile.originalname };
 	}
 
 	async convertToWebP(fileBuffer: Buffer): Promise<Buffer> {
