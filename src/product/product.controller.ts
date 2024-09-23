@@ -116,8 +116,13 @@ export class ProductController {
 	}
 
 	@Get()
-	async getAll(@Query('page') page: number, @Query('limit') limit: number) {
-		return await this.productService.getAll(page, limit);
+	async getAll(@Query('page') page: string, @Query('limit') limit: string) {
+		const pageNumber = Number(page);
+		const limitNumber = Number(limit);
+		if (isNaN(pageNumber) || isNaN(limitNumber)) {
+			throw new HttpException(ProductErrors.INVALID_PARAMS, HttpStatus.BAD_REQUEST);
+		}
+		return await this.productService.getAll(pageNumber, limitNumber);
 	}
 
 	@Get('search')

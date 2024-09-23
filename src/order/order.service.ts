@@ -39,7 +39,13 @@ export class OrderService {
 		return order;
 	}
 
-	async getOrdersByUserIdOrToken(userId: number | null, token: string) {
+	async getOrdersByUserIdOrToken(
+		userId: number | null,
+		token: string,
+		limit: number = 10,
+		page: number = 1,
+	) {
+		const offset = (page - 1) * limit;
 		const orders = await this.prismaService.order.findMany({
 			where: {
 				userId,
@@ -48,6 +54,8 @@ export class OrderService {
 			include: {
 				orderItem: true,
 			},
+			skip: offset,
+			take: limit,
 		});
 		if (!orders) {
 			throw new HttpException(OrderErrors.NOT_FOUND, HttpStatus.NOT_FOUND);

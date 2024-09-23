@@ -1,14 +1,14 @@
 import { UserRole } from '@prisma/client';
 
 export const AuthErrors = {
-	USER_NOT_FOUND: 'Пользователь с таким email не найден',
-	INCORRECT_PASSWORD: 'Неверный пароль',
-	ALLREADY_REGISTERED: 'Пользователь с таким email уже зарегистрирован',
-	FULLNAME_MUST_BE_STRING: 'Имя и фамилия должны быть строками',
-	EMAIL_MUST_BE_STRING: 'Email должен быть строкой',
-	EMAIL_MUST_BE_VALID: 'Email должен быть валидным',
-	PASSWORD_MUST_BE_STRING: 'Пароль должен быть строкой',
-	PASSWORD_MIN_LENGTH: 'Пароль должен содержать не менее 6 символов',
-	NO_PERMISSION: 'Недостаточно прав для данного действия',
-	ROLE_IS_EMPTY: `Роль должна быть - ${UserRole.ADMIN} или ${UserRole.USER}`,
+	USER_NOT_FOUND: 'User with this email not found',
+	INCORRECT_PASSWORD: 'Incorrect password',
+	ALLREADY_REGISTERED: 'User with this email already exists',
+	FULLNAME_MUST_BE_STRING: 'Fullname must be a string',
+	EMAIL_MUST_BE_STRING: 'Email must be a string',
+	EMAIL_MUST_BE_VALID: 'Email must be valid',
+	PASSWORD_MUST_BE_STRING: 'Password must be a string',
+	PASSWORD_MIN_LENGTH: 'Password must contain at least 6 characters',
+	NO_PERMISSION: 'No permission',
+	ROLE_IS_EMPTY: `Role must be one of ${Object.values(UserRole)}`,
 };

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CartTokenGuard } from 'src/auth/guards/cart-token.guard';
 import { UserInfo } from 'src/decorators/user-email-userId.decorator';
@@ -25,10 +25,15 @@ export class OrderController {
 
 	@Get()
 	@UseGuards(CartTokenGuard)
-	async getOrdersByUserIdOrToken(@UserEmailAndId() userInfo: UserInfo | null, @Req() req: Request) {
+	async getOrdersByUserIdOrToken(
+		@UserEmailAndId() userInfo: UserInfo | null,
+		@Req() req: Request,
+		@Query('limit') limit: number,
+		@Query('page') page: number,
+	) {
 		const userId = userInfo ? userInfo.userId : null;
 		const token = req.cartToken;
-		return await this.orderService.getOrdersByUserIdOrToken(userId, token);
+		return await this.orderService.getOrdersByUserIdOrToken(userId, token, limit, page);
 	}
 
 	@Get(':id')

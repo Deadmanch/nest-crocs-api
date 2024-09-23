@@ -3,6 +3,8 @@ import {
 	Controller,
 	Delete,
 	Get,
+	HttpException,
+	HttpStatus,
 	Param,
 	Patch,
 	Post,
@@ -16,6 +18,7 @@ import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CategoryErrors } from './category.constants';
 
 @Controller('category')
 export class CategoryController {
@@ -46,8 +49,13 @@ export class CategoryController {
 	}
 
 	@Get()
-	async getAll(@Query('page') page: number, @Query('limit') limit: number) {
-		return await this.categoryService.getAll(page, limit);
+	async getAll(@Query('page') page: string, @Query('limit') limit: string) {
+		const pageNumber = Number(page);
+		const limitNumber = Number(limit);
+		if (isNaN(pageNumber) || isNaN(limitNumber)) {
+			throw new HttpException(CategoryErrors.INVALID_PARAMS, HttpStatus.BAD_REQUEST);
+		}
+		return await this.categoryService.getAll(pageNumber, limitNumber);
 	}
 
 	@Roles(UserRole.ADMIN)

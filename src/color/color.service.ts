@@ -50,8 +50,17 @@ export class ColorService {
 		return existingColor;
 	}
 
-	async getAll(): Promise<ColorModel[]> {
-		return await this.prismaService.color.findMany();
+	async getAll(page: number = 1, limit: number = 10): Promise<ColorModel[]> {
+		const offset = (page - 1) * limit;
+		const colors = await this.prismaService.color.findMany({
+			skip: offset,
+			take: limit,
+		});
+		if (!colors) {
+			throw new HttpException(ColorErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
+		}
+
+		return colors;
 	}
 
 	async delete(id: number): Promise<ColorModel | null> {

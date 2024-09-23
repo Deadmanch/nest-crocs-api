@@ -1,9 +1,9 @@
 export const UserErrors = {
-	NOT_FOUND: 'Пользователь с таким id не найден.',
-	EMAIL_EXISTS: 'Пользователь с таким email уже существует.',
-	EMAIL_MUST_BE_STRING: 'Email должен быть строкой.',
-	PASSWORD_MUST_BE_STRING: 'Пароль должен быть строкой.',
-	PASSWORD_MIN_LENGTH: 'Пароль должен содержать не менее 6 символов.',
-	EMAIL_MUST_BE_VALID: 'Email должен быть валидным.',
-	FULL_NAME_MUST_BE_VALID: 'Имя и фамилия должны содержать только буквы.',
+	NOT_FOUND: 'User with this id was not found',
+	EMAIL_EXISTS: 'User with this email already exists',
+	EMAIL_MUST_BE_STRING: 'User email must be a string',
+	PASSWORD_MUST_BE_STRING: 'User password must be a string',
+	PASSWORD_MIN_LENGTH: 'Password must contain at least 6 characters',
+	EMAIL_MUST_BE_VALID: 'Email must be valid',
+	FULL_NAME_MUST_BE_VALID: 'Full name must be a string',
 };

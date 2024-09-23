@@ -3,9 +3,12 @@ import {
 	Controller,
 	Delete,
 	Get,
+	HttpException,
+	HttpStatus,
 	Param,
 	Patch,
 	Post,
+	Query,
 	UseGuards,
 	UsePipes,
 	ValidationPipe,
@@ -17,6 +20,7 @@ import { Roles } from '../decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { CreateSizeDto } from './dto/create-size.dto';
 import { UpdateSizeDto } from './dto/update-size.dto';
+import { SizeErrors } from './size.constants';
 
 @Controller('size')
 export class SizeController {
@@ -49,8 +53,13 @@ export class SizeController {
 	}
 
 	@Get()
-	async getAll() {
-		return await this.sizeService.getAll();
+	async getAll(@Query('page') page: string, @Query('limit') limit: string) {
+		const pageNumber = Number(page);
+		const limitNumber = Number(limit);
+		if (isNaN(pageNumber) || isNaN(limitNumber)) {
+			throw new HttpException(SizeErrors.INVALID_PARAMS, HttpStatus.BAD_REQUEST);
+		}
+		return await this.sizeService.getAll(pageNumber, limitNumber);
 	}
 
 	@Roles(UserRole.ADMIN)

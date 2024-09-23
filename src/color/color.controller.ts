@@ -8,6 +8,7 @@ import {
 	Param,
 	Patch,
 	Post,
+	Query,
 	UploadedFiles,
 	UseGuards,
 	UseInterceptors,
@@ -93,7 +94,12 @@ export class ColorController {
 	}
 
 	@Get()
-	async getAll() {
-		return await this.colorService.getAll();
+	async getAll(@Query('page') page: string, @Query('limit') limit: string) {
+		const pageNumber = Number(page);
+		const limitNumber = Number(limit);
+		if (isNaN(pageNumber) || isNaN(limitNumber)) {
+			throw new HttpException(ColorErrors.INVALID_PARAMS, HttpStatus.BAD_REQUEST);
+		}
+		return await this.colorService.getAll(pageNumber, limitNumber);
 	}
 }
