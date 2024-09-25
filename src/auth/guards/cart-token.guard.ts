@@ -16,8 +16,7 @@ export class CartTokenGuard implements CanActivate {
 			cartToken = newCart.token;
 			request.res?.cookie('cartToken', cartToken, {
 				httpOnly: true,
-				secure: true,
-				sameSite: 'strict',
+				maxAge: 24 * 60 * 60 * 1000,
 			});
 		}
 		request.cartToken = cartToken;

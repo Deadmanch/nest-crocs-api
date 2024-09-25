@@ -36,7 +36,7 @@ export class AuthService {
 		}
 		const payload = { email: user.email, userId: user.id };
 		const token = await this.jwtService.signAsync(payload);
-		res.cookie('jwt', token, { httpOnly: true, secure: true, sameSite: 'strict' });
+		res.cookie('jwt', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
 		return {
 			access_token: token,
 		};
