@@ -41,7 +41,10 @@ export class CategoryService {
 		return existingCategory;
 	}
 
-	async getAll(page: number = 1, limit: number = 10): Promise<CategoryModel[]> {
+	async getAll(
+		page: number = 1,
+		limit: number = 10,
+	): Promise<{ total: number; categories: CategoryModel[] }> {
 		const offset = (page - 1) * limit;
 		const categories = await this.prismaService.category.findMany({
 			skip: offset,
@@ -51,7 +54,8 @@ export class CategoryService {
 			throw new HttpException(CategoryErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
 		}
 
-		return categories;
+		const total = await this.prismaService.category.count();
+		return { total, categories };
 	}
 
 	async update(id: number, data: IUpdateCategory): Promise<CategoryModel | null> {

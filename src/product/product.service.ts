@@ -89,44 +89,51 @@ export class ProductService {
 		sizeIds,
 		page = 1,
 		limit = 10,
-	}: IFilterProduct): Promise<ProductModel[] | null> {
+	}: IFilterProduct): Promise<{ total: number; products: ProductModel[] } | null> {
+		const offset = (page - 1) * limit;
 		const products = await this.prismaService.product.findMany({
-			skip: (page - 1) * limit,
-			take: limit,
 			where: {
-				AND: [
-					{ categoryId },
-					minPrice ? { originalPrice: { gte: minPrice } } : {},
-					maxPrice ? { originalPrice: { lte: maxPrice } } : {},
-					colorIds ? { colors: { some: { id: { in: colorIds } } } } : {},
-					sizeIds ? { sizes: { some: { id: { in: sizeIds } } } } : {},
-				],
+				categoryId,
+				originalPrice: { gte: minPrice, lte: maxPrice },
+				colors: { some: { id: { in: colorIds } } },
+				sizes: { some: { id: { in: sizeIds } } },
 			},
+			skip: offset,
+			take: limit,
 			include: {
 				colors: true,
 				sizes: true,
 			},
 		});
 		if (!products) {
-			throw new HttpException(ProductErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
+			return null;
 		}
-		return products;
+		const total = await this.prismaService.product.count({
+			where: {
+				categoryId,
+				originalPrice: { gte: minPrice, lte: maxPrice },
+				colors: { some: { id: { in: colorIds } } },
+				sizes: { some: { id: { in: sizeIds } } },
+			},
+		});
+		return { total, products };
 	}
 
-	async getAll(page: number = 1, limit: number = 10): Promise<ProductModel[]> {
-		const skip = (page - 1) * limit;
+	async getAll(
+		page: number = 1,
+		limit: number = 10,
+	): Promise<{ total: number; products: ProductModel[] }> {
+		const offset = (page - 1) * limit;
 		const products = await this.prismaService.product.findMany({
-			skip,
+			skip: offset,
 			take: limit,
-			include: {
-				colors: true,
-				sizes: true,
-			},
+			include: { colors: true, sizes: true },
 		});
 		if (!products) {
 			throw new HttpException(ProductErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
 		}
-		return products;
+		const total = await this.prismaService.product.count();
+		return { total, products };
 	}
 
 	async getById(id: number): Promise<ProductModel | null> {

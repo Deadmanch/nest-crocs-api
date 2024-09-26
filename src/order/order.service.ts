@@ -3,12 +3,13 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ICreateOrder } from './interfaces/create-order.interface';
 import { OrderErrors } from './order.constants';
 import { OrderStatus } from '@prisma/client';
+import { Order as OrderModel } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
 	constructor(private readonly prismaService: PrismaService) {}
 
-	async createOrder(userId: number | null, token: string, data: ICreateOrder) {
+	async createOrder(userId: number | null, token: string, data: ICreateOrder): Promise<OrderModel> {
 		const order = await this.prismaService.order.create({
 			data: {
 				fullName: data.fullName,
@@ -44,26 +45,27 @@ export class OrderService {
 		token: string,
 		limit: number = 10,
 		page: number = 1,
-	) {
+	): Promise<{ total: number; orders: OrderModel[] }> {
 		const offset = (page - 1) * limit;
 		const orders = await this.prismaService.order.findMany({
 			where: {
 				userId,
 				token,
 			},
+			skip: offset,
+			take: limit,
 			include: {
 				orderItem: true,
 			},
-			skip: offset,
-			take: limit,
 		});
 		if (!orders) {
 			throw new HttpException(OrderErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
 		}
-		return orders;
+		const total = await this.prismaService.order.count();
+		return { total, orders };
 	}
 
-	async getOrderById(id: number) {
+	async getOrderById(id: number): Promise<OrderModel> {
 		const order = await this.prismaService.order.findUnique({
 			where: {
 				id,
@@ -77,7 +79,7 @@ export class OrderService {
 		}
 		return order;
 	}
-	async updateOrderStatus(orderId: number, status: OrderStatus) {
+	async updateOrderStatus(orderId: number, status: OrderStatus): Promise<OrderModel> {
 		const order = await this.prismaService.order.findUnique({ where: { id: orderId } });
 		if (!order) {
 			throw new HttpException(OrderErrors.NOT_FOUND, HttpStatus.NOT_FOUND);

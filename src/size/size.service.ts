@@ -37,7 +37,10 @@ export class SizeService {
 		return existingSize;
 	}
 
-	async getAll(page: number = 1, limit: number = 10): Promise<SizeModel[]> {
+	async getAll(
+		page: number = 1,
+		limit: number = 10,
+	): Promise<{ total: number; sizes: SizeModel[] }> {
 		const offset = (page - 1) * limit;
 		const sizes = await this.prismaService.size.findMany({
 			skip: offset,
@@ -47,7 +50,9 @@ export class SizeService {
 			throw new HttpException(SizeErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
 		}
 
-		return sizes;
+		const total = await this.prismaService.size.count();
+
+		return { total, sizes };
 	}
 
 	async update(id: number, data: IUpdateSize): Promise<SizeModel | null> {
