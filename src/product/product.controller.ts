@@ -17,7 +17,7 @@ import {
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { IFilterData } from './interface/filter-data.interface';
-import { ProductModule } from './product.module';
+import { Product as ProductModel } from '@prisma/client';
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
@@ -44,7 +44,9 @@ export class ProductController {
 
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@Get('filter')
-	async filterProducts(@Query() filterParams: FilterProductDto): Promise<ProductModule[] | null> {
+	async filterProducts(
+		@Query() filterParams: FilterProductDto,
+	): Promise<{ total: number; products: ProductModel[] } | null> {
 		return this.productService.getFilterProducts(filterParams);
 	}
 
