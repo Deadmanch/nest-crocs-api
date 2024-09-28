@@ -182,7 +182,67 @@ export class ProductService {
 		if (!product) {
 			throw new HttpException(ProductErrors.NOT_FOUND_BY_ID, HttpStatus.NOT_FOUND);
 		}
-		return await this.prismaService.product.update({ where: { id }, data });
+
+		// Проверка существования категории, если она передана для обновления
+		if (data.categoryId) {
+			const existingCategory = await this.prismaService.category.findUnique({
+				where: { id: data.categoryId },
+			});
+			if (!existingCategory) {
+				throw new HttpException(ProductErrors.CATEGORY_NOT_FOUND, HttpStatus.NOT_FOUND);
+			}
+		}
+
+		// Проверка существования цветов, если они переданы для обновления
+		if (data.colorIds) {
+			const existingColors = await this.prismaService.color.findMany({
+				where: { id: { in: data.colorIds } },
+			});
+			if (existingColors.length !== data.colorIds.length) {
+				throw new HttpException(ProductErrors.COLORSIDS_NOT_FOUND, HttpStatus.NOT_FOUND);
+			}
+		}
+
+		// Проверка существования размеров, если они переданы для обновления
+		if (data.sizeIds) {
+			const existingSizes = await this.prismaService.size.findMany({
+				where: { id: { in: data.sizeIds } },
+			});
+			if (existingSizes.length !== data.sizeIds.length) {
+				throw new HttpException(ProductErrors.SIZESIDS_NOT_FOUND, HttpStatus.NOT_FOUND);
+			}
+		}
+
+		// Обновление данных продукта
+		return await this.prismaService.product.update({
+			where: { id },
+			data: {
+				title: data.title,
+				slug: data.slug,
+				images: data.images,
+				metaTitle: data.metaTitle,
+				metaDesc: data.metaDesc,
+				seoText: data.seoText,
+				originalPrice: data.originalPrice,
+				discountedPrice: data.discountedPrice,
+				tags: data.tags,
+				category: data.categoryId
+					? {
+							connect: { id: data.categoryId },
+						}
+					: undefined,
+				colors: data.colorIds
+					? {
+							set: data.colorIds.map((id) => ({ id })),
+						}
+					: undefined,
+				sizes: data.sizeIds
+					? {
+							set: data.sizeIds.map((id) => ({ id })),
+						}
+					: undefined,
+			},
+		});
 	}
 
 	async getRandomProducts(): Promise<ProductModel[] | null> {
