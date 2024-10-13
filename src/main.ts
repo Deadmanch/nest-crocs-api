@@ -15,7 +15,7 @@ async function bootstrap() {
 		.build();
 	const document = SwaggerModule.createDocument(app, config);
 	SwaggerModule.setup('api', app, document);
-	app.enableCors({ origin: 'http://localhost:5173', credentials: true });
+	app.enableCors({ origin: ['http://localhost:5173', 'http://localhost:3000'], credentials: true });
 	app.use(cookieParser());
 	const configService = app.get(ConfigService);
 	const port = configService.get<number>('APP_PORT') || 3000;
