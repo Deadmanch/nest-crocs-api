@@ -117,6 +117,20 @@ export class ProductController {
 		return await this.productService.getBySlug(slug);
 	}
 
+	@Get('byCategory/:categoryId')
+	async getByCategory(
+		@Param('categoryId') categoryId: string,
+		@Query('page') page: string,
+		@Query('limit') limit: string,
+	) {
+		const pageNumber = Number(page);
+		const limitNumber = Number(limit);
+		if (isNaN(pageNumber) || isNaN(limitNumber)) {
+			throw new HttpException(ProductErrors.INVALID_PARAMS, HttpStatus.BAD_REQUEST);
+		}
+		return await this.productService.getByCategoryId(Number(categoryId), pageNumber, limitNumber);
+	}
+
 	@Get()
 	async getAll(@Query('page') page: string, @Query('limit') limit: string) {
 		const pageNumber = Number(page);

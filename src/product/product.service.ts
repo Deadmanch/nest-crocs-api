@@ -127,7 +127,7 @@ export class ProductService {
 		const products = await this.prismaService.product.findMany({
 			skip: offset,
 			take: limit,
-			include: { colors: true, sizes: true },
+			include: { colors: true, sizes: true, category: true },
 		});
 		if (!products) {
 			throw new HttpException(ProductErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -139,7 +139,7 @@ export class ProductService {
 	async getById(id: number): Promise<ProductModel | null> {
 		const product = await this.prismaService.product.findUnique({
 			where: { id },
-			include: { colors: true, sizes: true },
+			include: { colors: true, sizes: true, category: true },
 		});
 		if (!product) {
 			throw new HttpException(ProductErrors.NOT_FOUND_BY_ID, HttpStatus.NOT_FOUND);
@@ -147,10 +147,29 @@ export class ProductService {
 		return product;
 	}
 
+	async getByCategoryId(
+		categoryId: number,
+		page: number = 1,
+		limit: number = 10,
+	): Promise<{ total: number; products: ProductModel[] }> {
+		const offset = (page - 1) * limit;
+		const products = await this.prismaService.product.findMany({
+			where: { categoryId },
+			skip: offset,
+			take: limit,
+			include: { colors: true, sizes: true, category: true },
+		});
+		if (!products) {
+			throw new HttpException(ProductErrors.NOT_FOUND_BY_CATEGORY_ID, HttpStatus.NOT_FOUND);
+		}
+		const total = await this.prismaService.product.count({ where: { categoryId } });
+		return { total, products };
+	}
+
 	async getBySlug(slug: string): Promise<ProductModel | null> {
 		const product = await this.prismaService.product.findUnique({
 			where: { slug },
-			include: { colors: true, sizes: true },
+			include: { colors: true, sizes: true, category: true },
 		});
 		if (!product) {
 			throw new HttpException(ProductErrors.NOT_FOUND_BY_SLUG, HttpStatus.NOT_FOUND);
@@ -161,7 +180,7 @@ export class ProductService {
 	async getByTitle(title: string): Promise<ProductModel | null> {
 		const product = await this.prismaService.product.findUnique({
 			where: { title },
-			include: { colors: true, sizes: true },
+			include: { colors: true, sizes: true, category: true },
 		});
 		if (!product) {
 			throw new HttpException(ProductErrors.NOT_FOUND_BY_TITLE, HttpStatus.NOT_FOUND);

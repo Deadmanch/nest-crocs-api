@@ -1,0 +1,10 @@
+version: '3.9'
+services:
+  crocs.api:
+    image: crocs-api
+    restart: always
+    container_name: crocs-api
+    ports:
+      - 3002:3002
+    volumes:
+      - ./.env:/app/.env

@@ -24,4 +24,5 @@ export const ProductErrors = {
 	LIMIT_MUST_BE_NUMBER: 'Limit must be a number.',
 	NOT_FOUND: 'Product not found',
 	INVALID_PARAMS: 'Invalid params - page and/or limit.',
+	NOT_FOUND_BY_CATEGORY_ID: 'Product not found by category ID',
 };
