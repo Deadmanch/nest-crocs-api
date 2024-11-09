@@ -3,9 +3,10 @@ import { ProductErrors } from '../product.constants';
 import { Transform } from 'class-transformer';
 
 export class FilterProductDto {
+	@IsOptional()
 	@IsNumber({}, { message: ProductErrors.CATEGORY_ID_MUST_BE_NUMBER })
 	@Transform(({ value }) => Number(value))
-	categoryId: number;
+	categoryId?: number;
 	@IsOptional()
 	@IsNumber({}, { message: ProductErrors.MIN_PRICE_MUST_BE_NUMBER })
 	@Transform(({ value }) => Number(value))

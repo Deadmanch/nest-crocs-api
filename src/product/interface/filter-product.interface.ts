@@ -1,5 +1,5 @@
 export interface IFilterProduct {
-	categoryId: number;
+	categoryId?: number;
 	minPrice?: number;
 	maxPrice?: number;
 	colorIds?: number[];

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CartErrors, CartMessage } from './cart.constants';
+import { CartErrors } from './cart.constants';
 import { ICreateCart } from './interfaces/create-cart.interface';
 import { IUpdateCart } from './interfaces/update-cart.interface';
 import { Cart as CartModel } from '@prisma/client';
@@ -27,7 +27,11 @@ export class CartService {
 			data: { totalAmount },
 		});
 	}
-
+	async findCartByUserId(userId: number): Promise<CartModel | null> {
+		return await this.prismaService.cart.findFirst({
+			where: { userId },
+		});
+	}
 	async createCart(userId: number | null): Promise<CartModel> {
 		const token = crypto.randomUUID();
 		const cart = await this.prismaService.cart.create({
@@ -65,7 +69,10 @@ export class CartService {
 		});
 
 		if (existingItem) {
-			existingItem.quantity += quantity;
+			await this.prismaService.cartItem.update({
+				where: { id: existingItem.id },
+				data: { quantity: existingItem.quantity + quantity },
+			});
 		} else {
 			await this.prismaService.cartItem.create({
 				data: {
@@ -77,8 +84,16 @@ export class CartService {
 				},
 			});
 		}
+
 		await this.recalculateTotalAmount(cart.id);
-		return { message: CartMessage.ADDED_TO_CART };
+
+		// Обновляем корзину и возвращаем ее с новыми данными
+		const updatedCart = await this.prismaService.cart.findUnique({
+			where: { id: cart.id },
+			include: { cartItems: { include: { product: true, color: true, size: true } } }, // или укажите необходимые связки
+		});
+
+		return updatedCart;
 	}
 
 	async updateItem(userId: number | null, token: string, itemId: string, data: IUpdateCart) {
@@ -99,8 +114,12 @@ export class CartService {
 		}
 
 		await this.recalculateTotalAmount(cart.id);
+		const updatedCart = await this.prismaService.cart.findUnique({
+			where: { id: cart.id },
+			include: { cartItems: { include: { product: true, color: true, size: true } } }, // или укажите необходимые связки
+		});
 
-		return { message: CartMessage.UPDATED_QUANTITY };
+		return updatedCart;
 	}
 
 	async removeItem(userId: number | null, token: string, itemId: string) {
@@ -119,6 +138,11 @@ export class CartService {
 		// Пересчитать общую стоимость после удаления
 		await this.recalculateTotalAmount(cart.id);
 
-		return { message: CartMessage.DELETED };
+		const updatedCart = await this.prismaService.cart.findUnique({
+			where: { id: cart.id },
+			include: { cartItems: { include: { product: true, color: true, size: true } } }, // или укажите необходимые связки
+		});
+
+		return updatedCart;
 	}
 }

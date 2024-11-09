@@ -11,6 +11,28 @@ import { IUpdateProduct } from './interface/update-product.interface';
 export class ProductService {
 	constructor(private readonly prismaService: PrismaService) {}
 
+	async searchProductsByTitle(query: string): Promise<ProductModel[] | null> {
+		const searhedProducts = await this.prismaService.product.findMany({
+			where: { title: { contains: query, mode: 'insensitive' } },
+			include: { colors: true, sizes: true, category: true },
+			take: 5,
+		});
+		if (!searhedProducts) {
+			throw new HttpException(ProductErrors.NOT_FOUND_BY_TITLE, HttpStatus.NOT_FOUND);
+		}
+		return searhedProducts;
+	}
+
+	async getRandomProducts(): Promise<ProductModel[] | null> {
+		const products = await this.prismaService.product.findMany({
+			take: 4,
+		});
+		if (!products) {
+			throw new HttpException(ProductErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
+		}
+		return products;
+	}
+
 	async create(data: ICreateProduct): Promise<ProductModel> {
 		return this.prismaService.$transaction(async (prisma) => {
 			const existingProduct = await prisma.product.findUnique({
@@ -57,7 +79,35 @@ export class ProductService {
 			return product;
 		});
 	}
+	async getFilterDataByCategory(categoryId: number): Promise<IFilterData | null> {
+		const [sizes, colors, maxPriceResult, minPriceResult] = await this.prismaService.$transaction([
+			this.prismaService.size.findMany({
+				where: { products: { some: { categoryId } } },
+				select: { id: true, title: true, inStock: true },
+			}),
+			this.prismaService.color.findMany({
+				where: { products: { some: { categoryId } } },
+				select: { id: true, title: true, inStock: true, images: true },
+			}),
+			this.prismaService.product.findMany({
+				where: { categoryId },
+				select: { originalPrice: true },
+				orderBy: { originalPrice: 'desc' },
+				take: 1,
+			}),
+			this.prismaService.product.findMany({
+				where: { categoryId },
+				select: { originalPrice: true },
+				orderBy: { originalPrice: 'asc' },
+				take: 1,
+			}),
+		]);
 
+		const maxPrice = maxPriceResult[0] ? Math.round(maxPriceResult[0]?.originalPrice) : 0;
+		const minPrice = minPriceResult[0] ? Math.round(minPriceResult[0]?.originalPrice) : 0;
+
+		return { sizes, colors, maxPrice, minPrice };
+	}
 	async getFilterData(): Promise<IFilterData | null> {
 		const [sizes, colors, maxPriceResult, minPriceResult] = await this.prismaService.$transaction([
 			this.prismaService.size.findMany({ select: { id: true, title: true, inStock: true } }),
@@ -75,8 +125,8 @@ export class ProductService {
 				take: 1,
 			}),
 		]);
-		const maxPrice = maxPriceResult[0].originalPrice;
-		const minPrice = minPriceResult[0].originalPrice;
+		const maxPrice = Math.round(maxPriceResult[0].originalPrice) || 0;
+		const minPrice = Math.round(minPriceResult[0].originalPrice) || 0;
 
 		return { sizes, colors, maxPrice, minPrice };
 	}
@@ -91,31 +141,35 @@ export class ProductService {
 		limit = 10,
 	}: IFilterProduct): Promise<{ total: number; products: ProductModel[] } | null> {
 		const offset = (page - 1) * limit;
-		const products = await this.prismaService.product.findMany({
-			where: {
-				categoryId,
-				originalPrice: { gte: minPrice, lte: maxPrice },
-				colors: { some: { id: { in: colorIds } } },
-				sizes: { some: { id: { in: sizeIds } } },
+
+		const where: any = {
+			originalPrice: {
+				gte: minPrice,
+				lte: maxPrice,
 			},
+			colors: colorIds?.length ? { some: { id: { in: colorIds } } } : undefined,
+			sizes: sizeIds?.length ? { some: { id: { in: sizeIds } } } : undefined,
+		};
+
+		if (categoryId) {
+			where.categoryId = categoryId;
+		}
+
+		const products = await this.prismaService.product.findMany({
+			where,
 			skip: offset,
 			take: limit,
-			include: {
-				colors: true,
-				sizes: true,
-			},
+			include: { colors: true, sizes: true, category: true },
 		});
+
 		if (!products) {
 			return null;
 		}
+
 		const total = await this.prismaService.product.count({
-			where: {
-				categoryId,
-				originalPrice: { gte: minPrice, lte: maxPrice },
-				colors: { some: { id: { in: colorIds } } },
-				sizes: { some: { id: { in: sizeIds } } },
-			},
+			where,
 		});
+
 		return { total, products };
 	}
 
@@ -262,26 +316,5 @@ export class ProductService {
 					: undefined,
 			},
 		});
-	}
-
-	async getRandomProducts(): Promise<ProductModel[] | null> {
-		const products = await this.prismaService.product.findMany({
-			include: { colors: true, sizes: true },
-			take: 4,
-		});
-		if (!products) {
-			throw new HttpException(ProductErrors.NOT_FOUND, HttpStatus.NOT_FOUND);
-		}
-		return products;
-	}
-	async searchProductsByTitle(query: string): Promise<ProductModel[] | null> {
-		const searhedProducts = await this.prismaService.product.findMany({
-			where: { title: { contains: query } },
-			include: { colors: true, sizes: true },
-		});
-		if (!searhedProducts) {
-			throw new HttpException(ProductErrors.NOT_FOUND_BY_TITLE, HttpStatus.NOT_FOUND);
-		}
-		return searhedProducts;
 	}
 }

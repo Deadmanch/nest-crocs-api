@@ -50,6 +50,16 @@ export class ProductController {
 		return this.productService.getFilterProducts(filterParams);
 	}
 
+	@Get('search')
+	async search(@Query('query') query: string) {
+		return await this.productService.searchProductsByTitle(query);
+	}
+
+	@Get('random')
+	async getRandom() {
+		return await this.productService.getRandomProducts();
+	}
+
 	@UsePipes(new ValidationPipe({ transform: true }))
 	@Roles(UserRole.ADMIN)
 	@UseGuards(JwtAuthGuard, RoleGuard)
@@ -101,6 +111,12 @@ export class ProductController {
 
 		return updatedProduct;
 	}
+	@Get('filter-data/:categoryId')
+	async getFilterDataByCategoryId(
+		@Param('categoryId') categoryId: string,
+	): Promise<IFilterData | null> {
+		return this.productService.getFilterDataByCategory(Number(categoryId));
+	}
 
 	@Get(':id')
 	async getById(@Param('id') id: string) {
@@ -139,15 +155,5 @@ export class ProductController {
 			throw new HttpException(ProductErrors.INVALID_PARAMS, HttpStatus.BAD_REQUEST);
 		}
 		return await this.productService.getAll(pageNumber, limitNumber);
-	}
-
-	@Get('search')
-	async search(@Query('query') query: string) {
-		return await this.productService.searchProductsByTitle(query);
-	}
-
-	@Get('random')
-	async getRandom() {
-		return await this.productService.getRandomProducts();
 	}
 }

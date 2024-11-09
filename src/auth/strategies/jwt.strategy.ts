@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
@@ -13,6 +13,7 @@ function extractJwtFromCookie(req: Request) {
 
 	return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
 }
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
 	constructor(private readonly configService: ConfigService) {
@@ -23,7 +24,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 		});
 	}
 
-	async validate({ email, userId }: { email: string; userId: number }): Promise<UserInfo> {
-		return { userId, email };
+	async validate(payload?: { email: string; userId: number }): Promise<UserInfo | null> {
+		// Проверка на наличие и корректность payload
+		if (!payload || !payload.email || !payload.userId) {
+			throw new UnauthorizedException('Invalid or missing token payload');
+		}
+		return { userId: payload.userId, email: payload.email };
 	}
 }
